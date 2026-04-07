@@ -16,7 +16,23 @@ body {
     height: 100vh;
 }
 
+/* PANTALLA INICIO */
+.start {
+    text-align: center;
+}
+
+.start button {
+    padding: 15px 30px;
+    border: none;
+    border-radius: 20px;
+    background: #6b8e23;
+    color: white;
+    font-size: 1.2rem;
+}
+
+/* JUEGO */
 .game {
+    display: none;
     width: 90%;
     max-width: 400px;
     text-align: center;
@@ -41,11 +57,6 @@ img {
     margin-bottom: 10px;
 }
 
-.score {
-    margin-bottom: 15px;
-    opacity: 0.6;
-}
-
 .buttons {
     display: flex;
     gap: 10px;
@@ -57,32 +68,51 @@ button {
     border: none;
     border-radius: 20px;
     font-size: 1rem;
-    transition: 0.2s;
 }
 
 .yes { background: #6b8e23; color: white; }
 .no { background: #c94c4c; color: white; }
 
-button:active {
-    transform: scale(0.95);
+.info {
+    min-height: 40px;
+    margin-top: 10px;
 }
 
-.info {
-    margin-top: 10px;
-    font-size: 0.9rem;
-    opacity: 0.7;
-    min-height: 40px;
+/* PARTICULAS */
+.particle {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    background: green;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: explode 0.8s ease forwards;
+}
+
+@keyframes explode {
+    to {
+        transform: translate(var(--x), var(--y));
+        opacity: 0;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<div class="game">
-    <div class="score">Puntos: <span id="score">0</span></div>
+<!-- INICIO -->
+<div class="start" id="startScreen">
+    <h1>♻️ Reciclaje Game</h1>
+    <p>Mejor puntaje: <span id="best">0</span></p>
+    <button onclick="startGame()">Jugar</button>
+</div>
+
+<!-- JUEGO -->
+<div class="game" id="gameScreen">
+    <h3>Puntos: <span id="score">0</span></h3>
 
     <div class="card" id="card">
-        <img id="image" src="" alt="">
+        <img id="image">
         <h2 id="item"></h2>
     </div>
 
@@ -95,47 +125,62 @@ button:active {
 </div>
 
 <script>
+// 🖼 ITEMS (EDITABLES)
 const items = [
     {
         name: "Botella plástica",
         recyclable: true,
         info: "El plástico PET es reciclable",
-        img: "https://cdn-icons-png.flaticon.com/512/1046/1046857.png"
+        img: "botella.png"
     },
     {
         name: "Vidrio",
         recyclable: true,
         info: "El vidrio es 100% reciclable",
-        img: "https://cdn-icons-png.flaticon.com/512/1046/1046870.png"
+        img: "vidrio.png"
     },
     {
         name: "Caja de pizza sucia",
         recyclable: false,
         info: "La grasa contamina el reciclaje",
-        img: "https://cdn-icons-png.flaticon.com/512/3595/3595455.png"
+        img: "pizza.png"
     },
     {
         name: "Tetra Pak",
         recyclable: true,
-        info: "Es reciclable pero requiere procesos especiales",
-        img: "https://cdn-icons-png.flaticon.com/512/3081/3081559.png"
+        info: "Reciclable con tratamiento especial",
+        img: "tetrapak.png"
     },
     {
         name: "Servilleta usada",
         recyclable: false,
         info: "El papel sucio no se recicla",
-        img: "https://cdn-icons-png.flaticon.com/512/2933/2933827.png"
+        img: "servilleta.png"
     }
 ];
 
-let score = 0;
-let current;
-let history = []; // 🔥 cooldown
-
 // 🔊 sonidos
-let correctSound = new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3");
-let wrongSound = new Audio("https://www.soundjay.com/buttons/sounds/button-10.mp3");
+const correctSound = new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3");
+const wrongSound = new Audio("https://www.soundjay.com/buttons/sounds/button-10.mp3");
 
+// estado
+let score = 0;
+let best = localStorage.getItem("bestScore") || 0;
+let current;
+let history = [];
+let difficulty = 1;
+
+// UI
+document.getElementById("best").textContent = best;
+
+// iniciar
+function startGame() {
+    document.getElementById("startScreen").style.display = "none";
+    document.getElementById("gameScreen").style.display = "block";
+    newItem();
+}
+
+// nuevo item
 function newItem() {
     let available = items.filter(i => !history.includes(i));
 
@@ -147,50 +192,61 @@ function newItem() {
     current = available[Math.floor(Math.random() * available.length)];
 
     history.push(current);
-    if (history.length > 3) history.shift(); // 🔥 cooldown = 3 turnos
+    if (history.length > 3) history.shift();
 
     document.getElementById("item").textContent = current.name;
     document.getElementById("image").src = current.img;
     document.getElementById("info").textContent = "";
 }
 
-function answer(choice) {
-    const card = document.getElementById("card");
+// partículas
+function particles() {
+    for (let i = 0; i < 15; i++) {
+        let p = document.createElement("div");
+        p.className = "particle";
 
+        p.style.left = "50%";
+        p.style.top = "50%";
+
+        p.style.setProperty("--x", (Math.random()*200-100)+"px");
+        p.style.setProperty("--y", (Math.random()*200-100)+"px");
+
+        document.body.appendChild(p);
+
+        setTimeout(() => p.remove(), 800);
+    }
+}
+
+// responder
+function answer(choice) {
     if (choice === current.recyclable) {
         score++;
+        difficulty += 0.1;
+
         document.getElementById("score").textContent = score;
-
-        correctSound.currentTime = 0;
-        correctSound.play();
-
         document.getElementById("info").textContent = "✅ " + current.info;
 
-        card.classList.add("animate");
+        correctSound.play();
+        particles();
 
-        setTimeout(() => {
-            card.classList.remove("animate");
-            newItem();
-        }, 800);
+        setTimeout(newItem, 700);
 
     } else {
-        wrongSound.currentTime = 0;
         wrongSound.play();
 
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        if (navigator.vibrate) navigator.vibrate([200,100,200]);
 
         document.getElementById("info").textContent = "❌ " + current.info;
 
         setTimeout(() => {
+            if (score > best) {
+                localStorage.setItem("bestScore", score);
+            }
             alert("Game Over 💀 Puntaje: " + score);
-            score = 0;
-            document.getElementById("score").textContent = score;
-            newItem();
+            location.reload();
         }, 1000);
     }
 }
-
-newItem();
 </script>
 
 </body>
