@@ -25,7 +25,7 @@ body {
 .card {
     background: white;
     border-radius: 25px;
-    padding: 40px 20px;
+    padding: 30px 20px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     margin-bottom: 20px;
     transition: all 0.4s ease;
@@ -36,12 +36,13 @@ body {
     opacity: 0;
 }
 
-h1 {
-    font-size: 1.5rem;
+img {
+    width: 120px;
+    margin-bottom: 10px;
 }
 
 .score {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     opacity: 0.6;
 }
 
@@ -59,18 +60,18 @@ button {
     transition: 0.2s;
 }
 
-.yes {
-    background: #6b8e23;
-    color: white;
-}
-
-.no {
-    background: #c94c4c;
-    color: white;
-}
+.yes { background: #6b8e23; color: white; }
+.no { background: #c94c4c; color: white; }
 
 button:active {
     transform: scale(0.95);
+}
+
+.info {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    opacity: 0.7;
+    min-height: 40px;
 }
 </style>
 </head>
@@ -81,36 +82,76 @@ button:active {
     <div class="score">Puntos: <span id="score">0</span></div>
 
     <div class="card" id="card">
-        <h1 id="item">Botella plástica</h1>
+        <img id="image" src="" alt="">
+        <h2 id="item"></h2>
     </div>
 
     <div class="buttons">
-        <button class="yes" onclick="answer(true)">♻️ Reciclable</button>
-        <button class="no" onclick="answer(false)">🗑 No reciclable</button>
+        <button class="yes" onclick="answer(true)">♻️</button>
+        <button class="no" onclick="answer(false)">🗑</button>
     </div>
+
+    <div class="info" id="info"></div>
 </div>
 
 <script>
 const items = [
-    { name: "Botella plástica", recyclable: true },
-    { name: "Papel limpio", recyclable: true },
-    { name: "Cartón", recyclable: true },
-    { name: "Lata de aluminio", recyclable: true },
-    { name: "Vidrio", recyclable: true },
-
-    { name: "Papel sucio", recyclable: false },
-    { name: "Pañales", recyclable: false },
-    { name: "Residuos orgánicos", recyclable: false },
-    { name: "Telgopor sucio", recyclable: false },
-    { name: "Servilletas usadas", recyclable: false }
+    {
+        name: "Botella plástica",
+        recyclable: true,
+        info: "El plástico PET es reciclable",
+        img: "https://cdn-icons-png.flaticon.com/512/1046/1046857.png"
+    },
+    {
+        name: "Vidrio",
+        recyclable: true,
+        info: "El vidrio es 100% reciclable",
+        img: "https://cdn-icons-png.flaticon.com/512/1046/1046870.png"
+    },
+    {
+        name: "Caja de pizza sucia",
+        recyclable: false,
+        info: "La grasa contamina el reciclaje",
+        img: "https://cdn-icons-png.flaticon.com/512/3595/3595455.png"
+    },
+    {
+        name: "Tetra Pak",
+        recyclable: true,
+        info: "Es reciclable pero requiere procesos especiales",
+        img: "https://cdn-icons-png.flaticon.com/512/3081/3081559.png"
+    },
+    {
+        name: "Servilleta usada",
+        recyclable: false,
+        info: "El papel sucio no se recicla",
+        img: "https://cdn-icons-png.flaticon.com/512/2933/2933827.png"
+    }
 ];
 
-let current;
 let score = 0;
+let current;
+let history = []; // 🔥 cooldown
+
+// 🔊 sonidos
+let correctSound = new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3");
+let wrongSound = new Audio("https://www.soundjay.com/buttons/sounds/button-10.mp3");
 
 function newItem() {
-    current = items[Math.floor(Math.random() * items.length)];
+    let available = items.filter(i => !history.includes(i));
+
+    if (available.length === 0) {
+        history = [];
+        available = items;
+    }
+
+    current = available[Math.floor(Math.random() * available.length)];
+
+    history.push(current);
+    if (history.length > 3) history.shift(); // 🔥 cooldown = 3 turnos
+
     document.getElementById("item").textContent = current.name;
+    document.getElementById("image").src = current.img;
+    document.getElementById("info").textContent = "";
 }
 
 function answer(choice) {
@@ -120,17 +161,32 @@ function answer(choice) {
         score++;
         document.getElementById("score").textContent = score;
 
+        correctSound.currentTime = 0;
+        correctSound.play();
+
+        document.getElementById("info").textContent = "✅ " + current.info;
+
         card.classList.add("animate");
 
         setTimeout(() => {
             card.classList.remove("animate");
             newItem();
-        }, 300);
+        }, 800);
+
     } else {
-        alert("💀 Perdiste. Puntaje: " + score);
-        score = 0;
-        document.getElementById("score").textContent = score;
-        newItem();
+        wrongSound.currentTime = 0;
+        wrongSound.play();
+
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+
+        document.getElementById("info").textContent = "❌ " + current.info;
+
+        setTimeout(() => {
+            alert("Game Over 💀 Puntaje: " + score);
+            score = 0;
+            document.getElementById("score").textContent = score;
+            newItem();
+        }, 1000);
     }
 }
 
