@@ -1,0 +1,93 @@
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont;
+    background: #f5f0e6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* inicio */
+.start {
+    text-align: center;
+}
+
+.start button {
+    padding: 15px 30px;
+    border: none;
+    border-radius: 20px;
+    background: #6b8e23;
+    color: white;
+    font-size: 1.2rem;
+}
+
+/* juego */
+.game {
+    display: none;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.card {
+    background: white;
+    border-radius: 25px;
+    padding: 30px 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    transition: all 0.4s ease;
+}
+
+.card.animate {
+    transform: scale(0.95);
+    opacity: 0;
+}
+
+img {
+    width: 120px;
+    margin-bottom: 10px;
+}
+
+.buttons {
+    display: flex;
+    gap: 10px;
+}
+
+button {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 20px;
+    font-size: 1rem;
+}
+
+.yes { background: #6b8e23; color: white; }
+.no { background: #c94c4c; color: white; }
+
+button:active {
+    transform: scale(0.95);
+}
+
+.info {
+    min-height: 40px;
+    margin-top: 10px;
+}
+
+/* partículas */
+.particle {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    background: green;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: explode 0.8s ease forwards;
+}
+
+@keyframes explode {
+    to {
+        transform: translate(var(--x), var(--y));
+        opacity: 0;
+    }
+}
