@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reciclaje Game</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont;
+    background: #f5f0e6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.game {
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.card {
+    background: white;
+    border-radius: 25px;
+    padding: 40px 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    transition: all 0.4s ease;
+}
+
+.card.animate {
+    transform: scale(0.95);
+    opacity: 0;
+}
+
+h1 {
+    font-size: 1.5rem;
+}
+
+.score {
+    margin-bottom: 20px;
+    opacity: 0.6;
+}
+
+.buttons {
+    display: flex;
+    gap: 10px;
+}
+
+button {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 20px;
+    font-size: 1rem;
+    transition: 0.2s;
+}
+
+.yes {
+    background: #6b8e23;
+    color: white;
+}
+
+.no {
+    background: #c94c4c;
+    color: white;
+}
+
+button:active {
+    transform: scale(0.95);
+}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+    <div class="score">Puntos: <span id="score">0</span></div>
+
+    <div class="card" id="card">
+        <h1 id="item">Botella plástica</h1>
+    </div>
+
+    <div class="buttons">
+        <button class="yes" onclick="answer(true)">♻️ Reciclable</button>
+        <button class="no" onclick="answer(false)">🗑 No reciclable</button>
+    </div>
+</div>
+
+<script>
+const items = [
+    { name: "Botella plástica", recyclable: true },
+    { name: "Papel limpio", recyclable: true },
+    { name: "Cartón", recyclable: true },
+    { name: "Lata de aluminio", recyclable: true },
+    { name: "Vidrio", recyclable: true },
+
+    { name: "Papel sucio", recyclable: false },
+    { name: "Pañales", recyclable: false },
+    { name: "Residuos orgánicos", recyclable: false },
+    { name: "Telgopor sucio", recyclable: false },
+    { name: "Servilletas usadas", recyclable: false }
+];
+
+let current;
+let score = 0;
+
+function newItem() {
+    current = items[Math.floor(Math.random() * items.length)];
+    document.getElementById("item").textContent = current.name;
+}
+
+function answer(choice) {
+    const card = document.getElementById("card");
+
+    if (choice === current.recyclable) {
+        score++;
+        document.getElementById("score").textContent = score;
+
+        card.classList.add("animate");
+
+        setTimeout(() => {
+            card.classList.remove("animate");
+            newItem();
+        }, 300);
+    } else {
+        alert("💀 Perdiste. Puntaje: " + score);
+        score = 0;
+        document.getElementById("score").textContent = score;
+        newItem();
+    }
+}
+
+newItem();
+</script>
+
+</body>
+</html>
