@@ -1,3 +1,5 @@
+document.addEventListener("DOMContentLoaded", () => {
+
 const items = [
     { name: "Botella plástica", recyclable: true, info: "El plástico PET es reciclable", img: "img/botella.png" },
     { name: "Vidrio", recyclable: true, info: "El vidrio es 100% reciclable", img: "img/vidrio.png" },
@@ -24,11 +26,42 @@ let history = [];
 
 document.getElementById("best").textContent = best;
 
-function startGame() {
+window.startGame = function() {
     document.getElementById("startScreen").style.display = "none";
     document.getElementById("gameScreen").style.display = "block";
     newItem();
-}
+};
+
+window.answer = function(choice) {
+    if (choice === current.recyclable) {
+        score++;
+        document.getElementById("score").textContent = score;
+
+        document.getElementById("info").textContent = "✅ " + current.info;
+
+        correctSound.currentTime = 0;
+        correctSound.play();
+        particles();
+
+        setTimeout(newItem, 700);
+
+    } else {
+        wrongSound.currentTime = 0;
+        wrongSound.play();
+
+        if (navigator.vibrate) navigator.vibrate([200,100,200]);
+
+        document.getElementById("info").textContent = "❌ " + current.info;
+
+        setTimeout(() => {
+            if (score > best) {
+                localStorage.setItem("bestScore", score);
+            }
+            alert("Game Over 💀 Puntaje: " + score);
+            location.reload();
+        }, 1000);
+    }
+};
 
 function newItem() {
     let available = items.filter(i => !history.includes(i));
@@ -67,33 +100,4 @@ function particles() {
 const correctSound = new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3");
 const wrongSound = new Audio("https://www.soundjay.com/buttons/sounds/button-10.mp3");
 
-function answer(choice) {
-    if (choice === current.recyclable) {
-        score++;
-        document.getElementById("score").textContent = score;
-
-        document.getElementById("info").textContent = "✅ " + current.info;
-
-        correctSound.currentTime = 0;
-        correctSound.play();
-        particles();
-
-        setTimeout(newItem, 700);
-
-    } else {
-        wrongSound.currentTime = 0;
-        wrongSound.play();
-
-        if (navigator.vibrate) navigator.vibrate([200,100,200]);
-
-        document.getElementById("info").textContent = "❌ " + current.info;
-
-        setTimeout(() => {
-            if (score > best) {
-                localStorage.setItem("bestScore", score);
-            }
-            alert("Game Over 💀 Puntaje: " + score);
-            location.reload();
-        }, 1000);
-    }
-        }
+});
